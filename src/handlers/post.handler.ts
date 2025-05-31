@@ -2,6 +2,7 @@ import { Context } from 'hono';
 import { verify, JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'; 
 import { query } from '../lib/db'; 
 
+
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   console.error("FATAL ERROR: JWT_SECRET is not defined in environment variables.");
@@ -43,6 +44,11 @@ function getUserIdFromToken(c: Context): number | null {
 export const getAllPosts = async (c: Context) => {
   const userId = getUserIdFromToken(c);
 
+  // Validasi: Pastikan pengguna sudah login
+  if (!userId) {
+    return c.json({ error: 'Unauthorized: You must be logged in to view your posts.' }, 401);
+  }
+
   try {
     console.log('Mengambil postingan dengan userId:', userId);
     const posts = await query(`
@@ -67,8 +73,9 @@ export const getAllPosts = async (c: Context) => {
           END AS liked_by_me
       FROM post p
       JOIN users u ON p."authorId" = u.id
+      WHERE p."authorId" = $1::INTEGER
       ORDER BY p."createdAt" DESC
-    `, [userId || null]);
+    `, [userId]);
 
     console.log('Hasil query:', posts);
     return c.json(posts);
@@ -76,8 +83,8 @@ export const getAllPosts = async (c: Context) => {
     console.error('Error database di getAllPosts:', {
       message: dbError.message,
       stack: dbError.stack,
-      query: 'SELECT ...', // Ganti dengan query di atas
-      params: [userId || null],
+      query: 'SELECT ...',
+      params: [userId],
     });
     return c.json({ error: 'Gagal mengambil postingan karena error server.' }, 500);
   }
