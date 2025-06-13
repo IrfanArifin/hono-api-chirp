@@ -13,7 +13,7 @@ const userRoute = new Hono()
 // User profile endpoints
 userRoute.get('/search', searchUsersByUsername) // Pencarian user berdasarkan username
 userRoute.get('/:id', getUserProfile) // Mengambil profil user berdasarkan ID sesuai rencana
-userRoute.put('/:id/update', updateUserProfile) // Update profil user berdasarkan ID
+userRoute.post('/:id/update', updateUserProfile) // Update profil user berdasarkan ID
 
 // Follow relationship endpoints
 userRoute.post('/:id/follow', followUser)
