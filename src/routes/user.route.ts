@@ -2,8 +2,7 @@ import { Hono } from 'hono'
 import {
   getUserProfile,
   updateUserProfile,
-  followUser,
-  unfollowUser,
+  toggleFollow,
   getUserPosts,
   searchUsersByUsername,
 } from '../handlers/user.handler'
@@ -16,8 +15,8 @@ userRoute.get('/:id', getUserProfile) // Mengambil profil user berdasarkan ID se
 userRoute.post('/:id/update', updateUserProfile) // Update profil user berdasarkan ID
 
 // Follow relationship endpoints
-userRoute.post('/:id/follow', followUser)
-userRoute.delete('/:id/unfollow', unfollowUser)
+userRoute.post('/:id/toggle-follow', toggleFollow)
+
 
 // User posts endpoint
 userRoute.get('/:id/posts', getUserPosts)
