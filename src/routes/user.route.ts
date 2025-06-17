@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import {
+  getAllUsers,
   getUserProfile,
   updateUserProfile,
   toggleFollow,
@@ -10,6 +11,7 @@ import {
 const userRoute = new Hono()
 
 // User profile endpoints
+userRoute.get('', getAllUsers) // Mengambil semua user
 userRoute.get('/search', searchUsersByUsername) // Pencarian user berdasarkan username
 userRoute.get('/:id', getUserProfile) // Mengambil profil user berdasarkan ID sesuai rencana
 userRoute.post('/:id/update', updateUserProfile) // Update profil user berdasarkan ID

@@ -43,7 +43,43 @@ const getUserIdFromAuthHeader = async (c: Context): Promise<number | null> => {
         return null;
     }
 };
+/**
+ * Handler untuk mengambil daftar semua pengguna (dengan paginasi).
+ * Menyertakan status 'isFollowing' untuk setiap user.
+ */
+export const getAllUsers = async (c: Context) => {
+    const loggedInUserId = await getUserIdFromAuthHeader(c);
+    if (!loggedInUserId) {
+        return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const limit = parseInt(c.req.query('limit') || '20', 10);
+    const page = parseInt(c.req.query('page') || '1', 10);
+    const offset = (page - 1) * limit;
 
+    try {
+        const users = await query(`
+            SELECT 
+                u.id, 
+                u.username, 
+                u."fullName", 
+                u.image,
+                EXISTS (
+                    SELECT 1 FROM follow 
+                    WHERE "followerId" = $1 AND "followingId" = u.id
+                ) AS "isFollowing"
+            FROM users u
+            WHERE u.id != $1
+            ORDER BY u."createdAt" DESC
+            LIMIT $2 OFFSET $3
+        `, [loggedInUserId, limit, offset]);
+
+        return c.json(users);
+    } catch (dbError: any) {
+        console.error('Error di getAllUsers:', dbError);
+        return c.json({ error: 'Gagal mengambil daftar pengguna.' }, 500);
+    }
+};
 
 /**
  * Handler untuk mendapatkan profil pengguna, lengkap dengan status follow.
